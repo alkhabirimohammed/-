@@ -1,0 +1,977 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة مخزن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--light-gray);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 8px;
+        }
+        
+        .summary-item h3 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .summary-item p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-warning {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: var(--light);
+        }
+        
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .stock-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+            border: 1px solid var(--light-gray);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .stock-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stock-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            font-weight: bold;
+            color: var(--gray);
+            overflow: hidden;
+        }
+        
+        .stock-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .stock-info {
+            flex: 1;
+        }
+        
+        .stock-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: var(--dark);
+        }
+        
+        .stock-quantity {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .low-stock {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .critical-stock {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .small-btn {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 6px;
+        }
+        
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            height: 60px;
+        }
+        
+        .nav-item {
+            text-align: center;
+            padding: 5px;
+            font-size: 0.75rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .nav-icon {
+            font-size: 1rem;
+            display: block;
+            margin: 0 auto 3px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .screen {
+            flex: 1;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .movement-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .movement-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .movement-in {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .movement-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .settings-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .settings-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--light-gray);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .product-image-preview {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed var(--light-gray);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            cursor: pointer;
+            background: var(--light);
+        }
+        
+        .product-image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        
+        .product-image-preview span {
+            color: var(--gray);
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen">
+            <header>
+                <h1>إدارة مخزن</h1>
+            </header>
+            
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3 id="total-items">0</h3>
+                    <p>عدد الأصناف</p>
+                </div>
+                <div class="summary-item">
+                    <h3 id="total-quantity">0</h3>
+                    <p>إجمالي الكمية</p>
+                </div>
+            </div>
+            
+            <div id="low-stock-alert" class="alert alert-warning hidden">
+                <span>⚠️</span>
+                <span id="low-stock-count">0</span> أصناف قربت تخلص
+            </div>
+            
+            <button class="btn btn-primary" id="add-product-btn">
+                ➕ إضافة منتج
+            </button>
+            
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: var(--primary);">الأصناف</h3>
+                <div id="recent-items">
+                    <div class="empty-state">
+                        <i>📦</i>
+                        <p>لا يوجد أصناف بعد</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Screen -->
+        <div id="inventory-screen" class="screen hidden">
+            <div class="back-btn" id="back-to-home">
+                ← الرئيسية
+            </div>
+            <h2 style="margin-bottom: 20px; color: var(--primary);">المخزون</h2>
+            
+            <div id="inventory-list">
+                <div class="empty-state">
+                    <i>📦</i>
+                    <p>لا يوجد أصناف في المخزن</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Product Screen -->
+        <div id="add-product-screen" class="screen hidden">
+            <div class="back-btn" id="back-to-inventory">
+                ← المخزون
+            </div>
+            <h2 style="margin-bottom: 20px; color: var(--primary);">إضافة منتج جديد</h2>
+            
+            <div class="card">
+                <div class="product-image-preview" id="image-preview">
+                    <span>إضافة صورة</span>
+                </div>
+                
+                <input type="file" id="product-image" accept="image/*" class="hidden">
+                
+                <div class="input-group">
+                    <label>اسم المنتج *</label>
+                    <input type="text" id="product-name" placeholder="مثال: سكر أبيض">
+                </div>
+                
+                <div class="input-group">
+                    <label>كود المنتج (اختياري)</label>
+                    <input type="text" id="product-code" placeholder="باركود أو كود داخلي">
+                </div>
+                
+                <div class="input-group">
+                    <label>الكمية الابتدائية *</label>
+                    <input type="number" id="product-quantity" min="0" placeholder="الكمية">
+                </div>
+                
+                <div class="input-group">
+                    <label>وحدة القياس</label>
+                    <select id="product-unit">
+                        <option value="قطعة">قطعة</option>
+                        <option value="كرتونة">كرتونة</option>
+                        <option value="كيلو">كيلو</option>
+                        <option value="لتر">لتر</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>سعر الشراء (اختياري)</label>
+                    <input type="number" id="product-price" min="0" step="0.01" placeholder="سعر الشراء">
+                </div>
+                
+                <div class="input-group">
+                    <label>ملاحظات</label>
+                    <textarea id="product-notes" placeholder="ملاحظات إضافية عن المنتج"></textarea>
+                </div>
+                
+                <button class="btn btn-primary" id="save-product-btn">✅ حفظ المنتج</button>
+            </div>
+        </div>
+
+        <!-- Movements Screen -->
+        <div id="movements-screen" class="screen hidden">
+            <div class="back-btn" id="back-to-home-movements">
+                ← الرئيسية
+            </div>
+            <h2 style="margin-bottom: 20px; color: var(--primary);">سجل الحركات</h2>
+            
+            <div id="movements-list">
+                <div class="empty-state">
+                    <i>🔄</i>
+                    <p>لا توجد حركات بعد</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settings-screen" class="screen hidden">
+            <div class="back-btn" id="back-to-home-settings">
+                ← الرئيسية
+            </div>
+            <h2 style="margin-bottom: 20px; color: var(--primary);">الإعدادات</h2>
+            
+            <div class="card">
+                <div class="settings-section">
+                    <h3>الإعدادات العامة</h3>
+                    <div class="input-group">
+                        <label>اسم المخزن</label>
+                        <input type="text" id="warehouse-name" placeholder="اسم المخزن">
+                    </div>
+                    <div class="input-group">
+                        <label>العملة</label>
+                        <select id="currency">
+                            <option value="EGP">جنيه مصري</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>تنبيهات المخزون</h3>
+                    <div class="input-group">
+                        <label>حد أقل كمية</label>
+                        <input type="number" id="low-stock-threshold" min="0" value="5" placeholder="5">
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                        <span>تفعيل التنبيهات</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="alerts-enabled" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>حذف البيانات</h3>
+                    <button class="btn btn-danger" id="clear-data-btn">مسح كل البيانات</button>
+                </div>
+                
+                <div style="text-align: center; color: var(--gray); margin-top: 20px;">
+                    <p>الإصدار: 1.0.0</p>
+                    <p>تم التطوير بواسطة: مبرمج ذكي 😎</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav">
+            <div class="nav-item active" data-screen="home">
+                <span class="nav-icon">🏠</span>
+                الرئيسية
+            </div>
+            <div class="nav-item" data-screen="inventory">
+                <span class="nav-icon">📦</span>
+                المخزون
+            </div>
+            <div class="nav-item" data-screen="movements">
+                <span class="nav-icon">🔄</span>
+                الحركات
+            </div>
+            <div class="nav-item" data-screen="settings">
+                <span class="nav-icon">⚙️</span>
+                الإعدادات
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        let products = [];
+        let movements = [];
+        let nextId = 1;
+        
+        // DOM Elements
+        const screens = {
+            home: document.getElementById('home-screen'),
+            inventory: document.getElementById('inventory-screen'),
+            addProduct: document.getElementById('add-product-screen'),
+            movements: document.getElementById('movements-screen'),
+            settings: document.getElementById('settings-screen')
+        };
+        
+        const navItems = document.querySelectorAll('.nav-item');
+        const totalItemsEl = document.getElementById('total-items');
+        const totalQuantityEl = document.getElementById('total-quantity');
+        const lowStockAlertEl = document.getElementById('low-stock-alert');
+        const lowStockCountEl = document.getElementById('low-stock-count');
+        const recentItemsEl = document.getElementById('recent-items');
+        const inventoryListEl = document.getElementById('inventory-list');
+        const movementsListEl = document.getElementById('movements-list');
+        const imagePreview = document.getElementById('image-preview');
+        const productImageInput = document.getElementById('product-image');
+        
+        // Navigation
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const screen = item.dataset.screen;
+                showScreen(screen);
+                setActiveNavItem(item);
+            });
+        });
+        
+        // Back buttons
+        document.getElementById('back-to-home').addEventListener('click', () => showScreen('home'));
+        document.getElementById('back-to-inventory').addEventListener('click', () => showScreen('inventory'));
+        document.getElementById('back-to-home-movements').addEventListener('click', () => showScreen('home'));
+        document.getElementById('back-to-home-settings').addEventListener('click', () => showScreen('home'));
+        
+        // Add product button
+        document.getElementById('add-product-btn').addEventListener('click', () => {
+            // Reset form
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-code').value = '';
+            document.getElementById('product-quantity').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-notes').value = '';
+            document.getElementById('product-unit').value = 'قطعة';
+            imagePreview.innerHTML = '<span>إضافة صورة</span>';
+            productImageInput.value = '';
+            showScreen('addProduct');
+        });
+        
+        document.getElementById('save-product-btn').addEventListener('click', saveProduct);
+        document.getElementById('clear-data-btn').addEventListener('click', clearAllData);
+        
+        // Image preview functionality
+        imagePreview.addEventListener('click', () => {
+            productImageInput.click();
+        });
+        
+        productImageInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagePreview.innerHTML = `<img src="${event.target.result}" alt="Product Image">`;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        // Show screen function
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            
+            if (screens[screenName]) {
+                screens[screenName].classList.remove('hidden');
+                
+                if (screenName === 'home') {
+                    updateHomeScreen();
+                } else if (screenName === 'inventory') {
+                    updateInventoryScreen();
+                } else if (screenName === 'movements') {
+                    updateMovementsScreen();
+                }
+            }
+        }
+        
+        // Set active nav item
+        function setActiveNavItem(clickedItem) {
+            navItems.forEach(item => item.classList.remove('active'));
+            clickedItem.classList.add('active');
+        }
+        
+        // Save product function
+        function saveProduct() {
+            const name = document.getElementById('product-name').value.trim();
+            const quantity = document.getElementById('product-quantity').value;
+            const unit = document.getElementById('product-unit').value;
+            const code = document.getElementById('product-code').value.trim();
+            const price = document.getElementById('product-price').value;
+            const notes = document.getElementById('product-notes').value.trim();
+            const image = productImageInput.files && productImageInput.files[0] ? URL.createObjectURL(productImageInput.files[0]) : null;
+            
+            if (!name || !quantity) {
+                alert('يرجى ملء الحقول المطلوبة (الاسم والكمية)');
+                return;
+            }
+            
+            const quantityNum = parseInt(quantity);
+            if (quantityNum <= 0) {
+                alert('الكمية يجب أن تكون أكبر من صفر');
+                return;
+            }
+            
+            // Create new product
+            const newProduct = {
+                id: nextId++,
+                name: name,
+                code: code,
+                quantity: quantityNum,
+                unit: unit,
+                price: price ? parseFloat(price) : null,
+                notes: notes,
+                image: image,
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+            
+            products.push(newProduct);
+            
+            // Add movement record
+            movements.push({
+                id: movements.length + 1,
+                productId: newProduct.id,
+                productName: newProduct.name,
+                type: 'دخول',
+                quantity: quantityNum,
+                date: newProduct.createdAt,
+                reason: 'إضافة أولية'
+            });
+            
+            alert('تم حفظ المنتج بنجاح!');
+            
+            // Go back to home screen
+            showScreen('home');
+        }
+        
+        // Update home screen
+        function updateHomeScreen() {
+            const totalItems = products.length;
+            const totalQuantity = products.reduce((sum, product) => sum + product.quantity, 0);
+            const lowStockThreshold = parseInt(document.getElementById('low-stock-threshold').value) || 5;
+            const lowStockCount = products.filter(product => product.quantity <= lowStockThreshold).length;
+            
+            totalItemsEl.textContent = totalItems;
+            totalQuantityEl.textContent = totalQuantity;
+            lowStockCountEl.textContent = lowStockCount;
+            
+            if (lowStockCount > 0 && document.getElementById('alerts-enabled').checked) {
+                lowStockAlertEl.classList.remove('hidden');
+            } else {
+                lowStockAlertEl.classList.add('hidden');
+            }
+            
+            // Update recent items
+            if (totalItems > 0) {
+                recentItemsEl.innerHTML = products.map(product => {
+                    const lowStockThreshold = parseInt(document.getElementById('low-stock-threshold').value) || 5;
+                    const isLowStock = product.quantity <= lowStockThreshold;
+                    
+                    return `
+                        <div class="stock-item ${isLowStock ? 'low-stock' : ''}" data-id="${product.id}">
+                            <div class="stock-image">
+                                ${product.image ? `<img src="${product.image}" alt="${product.name}">` : product.name.charAt(0)}
+                            </div>
+                            <div class="stock-info">
+                                <div class="stock-name">${product.name}</div>
+                                <div class="stock-quantity">${product.quantity} ${product.unit}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Add click event to items
+                document.querySelectorAll('.stock-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const productId = parseInt(item.dataset.id);
+                        showProductDetails(productId);
+                    });
+                });
+            } else {
+                recentItemsEl.innerHTML = `
+                    <div class="empty-state">
+                        <i>📦</i>
+                        <p>لا يوجد أصناف بعد</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update inventory screen
+        function updateInventoryScreen() {
+            if (products.length > 0) {
+                inventoryListEl.innerHTML = products.map(product => {
+                    const lowStockThreshold = parseInt(document.getElementById('low-stock-threshold').value) || 5;
+                    const isLowStock = product.quantity <= lowStockThreshold;
+                    
+                    return `
+                        <div class="stock-item ${isLowStock ? 'low-stock' : ''}" data-id="${product.id}">
+                            <div class="stock-image">
+                                ${product.image ? `<img src="${product.image}" alt="${product.name}">` : product.name.charAt(0)}
+                            </div>
+                            <div class="stock-info">
+                                <div class="stock-name">${product.name}</div>
+                                <div class="stock-quantity">${product.quantity} ${product.unit}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.querySelectorAll('.stock-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const productId = parseInt(item.dataset.id);
+                        showProductDetails(productId);
+                    });
+                });
+            } else {
+                inventoryListEl.innerHTML = `
+                    <div class="empty-state">
+                        <i>📦</i>
+                        <p>لا يوجد أصناف في المخزن</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Update movements screen
+        function updateMovementsScreen() {
+            if (movements.length > 0) {
+                movementsListEl.innerHTML = movements.map(movement => `
+                    <div class="movement-item">
+                        <span class="movement-type movement-${movement.type === 'دخول' ? 'in' : 'out'}">
+                            ${movement.type}
+                        </span>
+                        <div><strong>${movement.productName}</strong></div>
+                        <div>${movement.quantity} وحدة</div>
+                        <div style="font-size: 0.9rem; color: var(--gray); margin-top: 5px;">
+                            ${movement.date} - ${movement.reason}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                movementsListEl.innerHTML = `
+                    <div class="empty-state">
+                        <i>🔄</i>
+                        <p>لا توجد حركات بعد</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Show product details modal
+        function showProductDetails(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const modalHtml = `
+                <div class="modal" id="product-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>تفاصيل المنتج</h3>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div class="product-image-preview" style="width: 120px; height: 120px; margin: 0 auto;">
+                                ${product.image ? `<img src="${product.image}" alt="${product.name}">` : `<span>${product.name.charAt(0)}</span>`}
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <strong>اسم المنتج:</strong>
+                            <p>${product.name}</p>
+                        </div>
+                        ${product.code ? `<div class="input-group"><strong>كود المنتج:</strong><p>${product.code}</p></div>` : ''}
+                        <div class="input-group">
+                            <strong>الكمية المتاحة:</strong>
+                            <p>${product.quantity} ${product.unit}</p>
+                        </div>
+                        ${product.price ? `<div class="input-group"><strong>سعر الشراء:</strong><p>${product.price} جنيه</p></div>` : ''}
+                        ${product.notes ? `<div class="input-group"><strong>ملاحظات:</strong><p>${product.notes}</p></div>` : ''}
+                        <div class="input-group">
+                            <strong>تاريخ الإضافة:</strong>
+                            <p>${product.createdAt}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('product-modal').remove();
+            });
+            
+            document.getElementById('product-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'product-modal') {
+                    e.target.remove();
+                }
+            });
+        }
+        
+        // Clear all data function
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من مسح كل البيانات؟ هذه العملية لا يمكن التراجع عنها!')) {
+                products = [];
+                movements = [];
+                nextId = 1;
+                updateHomeScreen();
+                alert('تم مسح جميع البيانات بنجاح!');
+            }
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHomeScreen();
+        });
+    </script>
+</body>
+</html>
+```
